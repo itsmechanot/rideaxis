@@ -1,0 +1,541 @@
+/* =========================================
+   RESET & BASE
+========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f7f7f7;
+}
+
+/* =========================================
+   SIDEBAR
+========================================= */
+.sidebar {
+    width: 250px;
+    background: linear-gradient(135deg, #333 0%, #555 100%);
+    color: white;
+    padding: 20px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.logo img {
+    height: 93px;
+    display: block;
+    margin: 0 auto 20px auto;
+    border-radius: 50%;
+}
+
+.nav-links {
+    list-style: none;
+    padding: 0 20px;
+}
+
+.nav-links li {
+    margin-bottom: 10px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+.nav-links i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* =========================================
+   MAIN CONTENT
+========================================= */
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 40px;
+    transition: margin-left 0.3s ease;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.header h1 {
+    color: #333;
+    font-size: 32px;
+}
+
+/* =========================================
+   DRIVER + RIDE LAYOUT
+========================================= */
+.driver-ride-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 30px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.driver-info-card,
+.profile-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px 30px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+    flex: 1 1 45%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 400px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.driver-info-card:hover,
+.profile-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================================
+   DRIVER INFO CARD
+========================================= */
+.driver-info-card h2 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+    border-bottom: 2px solid #667eea;
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+.driver-details {
+    margin-top: 10px;
+}
+
+.driver-details p {
+    font-size: 1rem;
+    color: #444;
+    margin: 8px 0;
+}
+
+.driver-photo img {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #667eea;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+/* =========================================
+   BUTTONS & ACTION AREA
+========================================= */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-top: auto;
+  flex-wrap: wrap;
+  position: relative;
+  transition: all 0.4s ease;
+}
+
+/* Generic button styling */
+.btn {
+  padding: 10px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary {
+  background: #f8f9fa;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+/* Hover effect */
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Disabled state */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   DRIVER RATING DISPLAY
+========================================= */
+.driver-rating {
+  margin-top: 10px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.star-rating i {
+  font-size: 20px;
+  transition: color 0.3s ease;
+}
+
+
+/* =========================================
+   RATING PANEL
+========================================= */
+#rateDriverBtn {
+  transition: transform 0.5s ease, opacity 0.4s ease;
+  z-index: 2;
+}
+
+.rating-panel {
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.95);
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px 25px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -20px) scale(0.95);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 1;
+}
+
+/* Show the panel when active */
+.rating-panel.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0) scale(1);
+}
+
+/* When the panel is open, move the Rate button slightly left */
+.action-buttons.active #rateDriverBtn {
+  transform: translateX(-190px);
+  opacity: 0.9;
+}
+
+/* =========================================
+   STAR INTERACTION
+========================================= */
+.stars {
+  display: flex;
+  gap: 8px;
+}
+
+.stars i {
+  font-size: 26px;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.stars i.selected {
+  color: gold;
+}
+
+/* Disabled state — after rating */
+.stars i.disabled {
+  color: #ddd;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* =========================================
+   RATING MESSAGE
+========================================= */
+#ratingMessage {
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  min-height: 20px;
+}
+
+
+/* =========================================
+   RIDE DETAILS CARD
+========================================= */
+.rides-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+}
+
+.ride-card {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 25px;
+    padding: 15px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    flex-wrap: wrap;
+}
+
+.ride-info {
+    flex: 1;
+}
+
+.ride-info h3 {
+    font-size: 1.2rem;
+    color: #34495e;
+    margin-bottom: 10px;
+}
+
+.ride-info p {
+    font-size: 0.95rem;
+    color: #555;
+    margin: 4px 0;
+}
+
+/* =========================================
+   VAN SEAT LAYOUT
+========================================= */
+.van-layout {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: auto;
+    margin-top: 20px;
+    flex: 0 0 250px;
+}
+
+.van-layout svg {
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+}
+
+.seat {
+    stroke: #fff;
+    stroke-width: 2px;
+    rx: 8;
+    ry: 8;
+    cursor: pointer;
+    transition: fill 0.3s ease, transform 0.2s ease;
+}
+
+.seat.available {
+    fill: #4caf50;
+}
+
+.seat.taken {
+    fill: #e74c3c;
+}
+
+.seat:hover {
+    transform: scale(1.05);
+    fill: #ffeb3b;
+}
+
+/* =========================================
+   RECENT RIDES
+========================================= */
+.recent-rides-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.card-header h2 {
+    color: #333;
+    font-size: 24px;
+}
+
+.view-all {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.view-all:hover {
+    color: #764ba2;
+}
+
+.rides-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ride-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.ride-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
+
+/* ✅ Large tablets / small desktops */
+@media (max-width: 1024px) {
+    .driver-ride-layout {
+        flex-direction: column;
+    }
+
+    .driver-info-card,
+    .profile-card {
+        flex: 1 1 100%;
+        min-height: auto;
+    }
+
+    .van-layout {
+        margin-top: 30px;
+    }
+}
+
+/* ✅ Tablets */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        width: 100%;
+        height: 70px;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        padding: 10px 20px;
+    }
+
+    .logo img {
+        height: 60px;
+        margin: 0;
+    }
+
+    .nav-links {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+    }
+
+    .nav-links li {
+        margin: 0 10px;
+    }
+
+    .main-content {
+        margin-left: 0;
+        margin-top: 90px;
+        padding: 20px;
+    }
+
+    .driver-ride-layout {
+        flex-direction: column;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn {
+        width: 100%;
+        max-width: 220px;
+    }
+}
+
+/* ✅ Phones */
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .card-header h2 {
+        font-size: 20px;
+    }
+
+    .driver-photo img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .card,
+    .driver-info-card,
+    .profile-card,
+    .recent-rides-card {
+        padding: 20px;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .ride-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ride-details {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

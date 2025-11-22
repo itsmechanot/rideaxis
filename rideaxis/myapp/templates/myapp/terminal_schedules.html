@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Schedules - RideAxis</title>
+    <link rel="icon" type="image/png" sizes="180x180" href="{% static 'myapp/img/WebApp_Logo2.png' %}">
+    <link rel="stylesheet" href="{% static 'myapp/css/profile.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="profile-img">
+                <img src="{% static 'myapp/img/WebApp_Logo.png' %}" alt="Profile Picture">
+            </div>
+            <ul class="nav">
+                <li><a href="{% url 'index' %}">Home</a></li>
+                <li><a href="{% url 'profile' %}">Profile</a></li>
+                <li><a href="#" onclick="openLogoutModal(event)">Sign Out</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="flex-cards">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📅 Terminal Schedules</h2>
+                        <p style="color: #666; font-size: 14px; margin: 5px 0 0 0;">
+                            All scheduled rides from {{ terminal_name }}
+                        </p>
+                    </div>
+
+                    {% if all_scheduled_rides %}
+                    <div class="schedules-list" style="margin-top: 15px;">
+                        {% for ride in all_scheduled_rides %}
+                        <div class="schedule-item" style="
+                            background: white;
+                            border: 2px solid {% if ride.assigned_driver == driver %}#667eea{% else %}#e1e4e8{% endif %};
+                            border-radius: 8px;
+                            padding: 15px;
+                            margin-bottom: 15px;
+                            {% if ride.assigned_driver == driver %}
+                            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+                            {% endif %}
+                        ">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    {% if ride.assigned_driver == driver %}
+                                    <span style="
+                                        background: #667eea;
+                                        color: white;
+                                        padding: 3px 10px;
+                                        border-radius: 12px;
+                                        font-size: 11px;
+                                        font-weight: 600;
+                                        margin-bottom: 8px;
+                                        display: inline-block;
+                                    ">ASSIGNED TO YOU</span>
+                                    {% endif %}
+                                    
+                                    <div class="schedule-route" style="margin-bottom: 8px;">
+                                        <span style="font-weight: 600; font-size: 18px; color: #333;">
+                                            {{ ride.terminal }} → {{ ride.route }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="schedule-details" style="color: #666; font-size: 14px;">
+                                        <p style="margin: 4px 0;">
+                                            <strong>📅 Departure:</strong> {{ ride.departure_time|date:"M d, Y - h:i A" }}
+                                        </p>
+                                        <p style="margin: 4px 0;">
+                                            <strong>🚐 Vehicle:</strong> {{ ride.plate_number }}
+                                        </p>
+                                        <p style="margin: 4px 0;">
+                                            <strong>👤 Assigned to:</strong> 
+                                            {% if ride.assigned_driver == driver %}
+                                                You
+                                            {% else %}
+                                                {{ ride.assigned_driver.first_name }} {{ ride.assigned_driver.last_name }}
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <span class="status-badge" style="
+                                        background: #ffc107;
+                                        color: #000;
+                                        padding: 6px 14px;
+                                        border-radius: 20px;
+                                        font-size: 12px;
+                                        font-weight: 600;
+                                    ">Scheduled</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state" style="
+                        text-align: center;
+                        padding: 40px;
+                        background: #f8f9fa;
+                        border-radius: 8px;
+                        color: #6c757d;
+                    ">
+                        <p style="margin: 0; font-size: 16px;">No scheduled rides available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="logout-modal-overlay" id="logoutModal">
+        <div class="logout-modal">
+            <div class="logout-modal-icon">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+            <h3>Sign Out</h3>
+            <p>Are you sure you want to sign out of your account?</p>
+            <div class="logout-modal-buttons">
+                <button class="btn-cancel" onclick="closeLogoutModal()">Cancel</button>
+                <a href="{% url 'logout' %}" class="btn-logout">Yes, Sign Out</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'myapp/javascript/profile.js' %}"></script>
+</body>
+</html>

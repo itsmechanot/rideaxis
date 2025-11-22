@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ride Details</title>
+    <link rel="icon" type="image/png" sizes="180x180" href="{% static 'myapp/img/WebApp_Logo2.png' %}">
+    <link rel="stylesheet" href="{% static 'myapp/css/driver_detail.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="logo">
+            <img src="{% static 'myapp/img/WebApp_Logo.png' %}" alt="RideAxis Logo">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}#rides"><i class="fas fa-home"></i> Home</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="header">
+            <h1>Ride Details</h1>
+        </div>
+
+        <div class="driver-ride-layout">
+            <!-- Driver Info -->
+            <div class="driver-info-card">
+                <h2>Driver Information</h2>
+                <div class="driver-details">
+                    <div class="driver-photo">
+                        {% if driver.profile_picture and driver.profile_picture.url %}
+                            <img src="{{ driver.profile_picture.url }}" alt="{{ driver.first_name }}'s Profile">
+                        {% else %}
+                            <img src="{% static 'myapp/img/driver_icon.png' %}" alt="Default Driver Icon">
+                        {% endif %}
+                    </div>
+                    <p><strong>Name:</strong> {{ driver.first_name }} {{ driver.last_name }}</p>
+                    <p><strong>Username:</strong> {{ driver.username }}</p>
+                    <p><strong>Email:</strong> {{ driver.email }}</p>
+                    <p><strong>Address:</strong> {{ driver.address }}</p>
+                    <p><strong>Sex:</strong> {{ driver.sex }}</p>
+                </div>
+                <div class="driver-rating">
+                    {% if average_rating > 0 %}
+                        <p><strong>Driver Rating:</strong></p>
+                        <div class="star-rating">
+                            {% for i in "12345" %}
+                {% if i|add:'0' <= ride.driver_avg_rating %}
+                  <i class="fa fa-star" style="color: #FFD700;"></i>
+                {% else %}
+                  <i class="fa fa-star" style="color: #ccc;"></i>
+                {% endif %}
+              {% endfor %}
+                            <span>{{ average_rating }}/5</span>
+                        </div>
+                    {% else %}
+                        <p><strong>Average Rating:</strong> No ratings yet</p>
+                    {% endif %}
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="rateDriverBtn">Rate Driver</button>
+                </div>
+            </div>
+
+            <!-- Current Ride -->
+            <div class="profile-card">
+    <h2>Current Ride</h2>
+    
+    {% if current_ride %}
+        
+        {% if current_ride.status == 'waiting' %}
+            
+            <div class="ride-card">
+                <div class="ride-info">
+                    <h3>Terminal: {{ current_ride.terminal }}</h3>
+                    <p class="full-route-display">
+                        <strong>Route:</strong> 
+                        <span class="route-start">{{ current_ride.start_point }}</span>
+                        <i class="fas fa-arrow-right" style="margin: 0 8px; color: #333;"></i>
+                        <span class="route-end">{{ current_ride.route }}</span>
+                    </p>
+                    <p><strong>Location:</strong> {{ current_ride.location }}</p>
+                    <p><strong>Departure:</strong> {{ current_ride.departure_time }}</p>
+                    <p><strong>Seats Available:</strong> {{ current_ride.seats_available }}</p>
+                    <p><strong>Plate Number:</strong> {{ current_ride.plate_number }}</p>
+                </div>
+                
+                <div class="van-layout">
+                    <svg width="220" height="400" viewBox="0 0 220 400">
+                        <rect x="10" y="10" width="200" height="380" rx="25" ry="25" fill="#a9a9a9" />
+                        {% for seat in current_ride.seat_classes %}
+                        <rect x="{{ seat.x }}" y="{{ seat.y }}" width="40" height="40"
+                            class="seat {{ seat.status }}" data-seat-id="{{ seat.id }}" style="cursor: pointer;" />
+                        {% endfor %}
+                    </svg>
+                </div>
+            </div>
+
+        {% elif current_ride.status == 'departed' %}
+            
+            <div class="departed-ride-info">
+                <h3>Driver for {{ current_ride.route }} is **ON THE ROAD!**</h3>
+                <p>Tracking last reported location for live visibility.</p>
+                
+                {% if latest_location %}
+                    <div id="map-container" data-lat="{{ latest_location.latitude }}" data-lon="{{ latest_location.longitude }}">
+                        <div id="passenger-map" style="width: 100%; height: 350px;"></div>
+                    </div>
+                {% else %}
+                    <p>The driver has departed but a location update is not yet available.</p>
+                {% endif %}
+                
+                <p class="ride-status mt-2">
+                    <strong>Status:</strong> <span style="color: #ffc107; font-weight: bold;">{{ current_ride.get_status_display }}</span>
+                </p>
+            </div>
+            
+        {% endif %}
+
+    {% else %}
+        <p>No active ride at the moment.</p>
+    {% endif %}
+</div>
+        </div>
+
+        <!-- Recent Rides -->
+            <div class="recent-rides-card">
+            <div class="card-header">
+                <h2>Recent Rides</h2>
+                <a href="#" class="view-all">View All</a>
+            </div>
+
+            <div class="rides-list">
+                {% if past_rides %}
+                    {% for ride in past_rides %}
+                    <div class="ride-item">
+                        <div class="ride-info">
+                            <div class="ride-location">
+                                <span class="from">{{ ride.terminal }}</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span class="to">{{ ride.route }}</span>
+                            </div>
+                            <div class="ride-details">
+                                <span class="date">{{ ride.departure_time|date:"M d, Y - h:i A" }}</span>
+                                <span class="price">Seats: {{ ride.seats_available }}</span>
+                            </div>
+                        </div>
+                        <div class="ride-status completed">{{ ride.status|title }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No recent rides found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+    <script>
+        const rateDriverUrl = "{% url 'rate_driver' driver.id %}";
+        const csrfToken = "{{ csrf_token }}";
+    </script>
+    
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> 
+    
+    <script src="{% static 'myapp/javascript/driver_rating.js' %}"></script>
+    
+    {% if current_ride and current_ride.status == 'departed' and latest_location %}
+    <script src="{% static 'myapp/javascript/passenger_tracker.js' %}"></script>
+    {% endif %}
+</body>
+
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RideAXis Login Page</title>
+    <link rel="icon" type="image/png" sizes="180x180" href="{% static 'myapp/img/WebApp_Logo2.png' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'myapp/css/login.css' %}">
+</head>
+<body>
+    <a href="{% url 'index' %}" class="back-button">⇦ Back</a>
+
+
+    {% if messages %}
+    {% for message in messages %}
+        <div id="popup-overlay" class="popup-overlay">
+        <div class="popup-card {% if message.tags %}popup-{{ message.tags }}{% endif %}">
+
+            <div class="popup-icon-wrap">
+            <div class="popup-icon" id="popup-icon">
+                <!-- icon will be filled by JS (✔ / ⚠) -->
+            </div>
+            </div>
+
+            <h3 id="popup-title" class="popup-title">Title</h3>
+            <p id="popup-text" class="popup-text">{{ message }}</p>
+
+            <button id="popup-action" class="popup-action">OK</button>
+        </div>
+        </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="container" id="container">
+         <div class="form-container sign-in">
+            <div class="login_form">
+                <div class="header">
+                    <h2>Welcome Back!</h2>
+                    <p>RideAxis - Where Timing Meets Travel</p>
+                </div>
+
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="input-container">
+                        <input type="text" name="username" id="login-username" autocomplete="off" placeholder=" " required>
+                        <label for="login-username" class="labelline">Username / Email</label>
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="input-container">
+                        <input type="password" name="password" id="login-password" autocomplete="off" placeholder=" " required>
+                        <label for="login-password" class="labelline">Password</label>
+                    </div>
+                    <button class="sign-in_button" type="submit">LOGIN</button>
+                </form>
+
+                <hr class="divider">
+                <p class="toggle-text">Don't have an Account?</p>
+                <a href="#" class="toggle-link" id="register">REGISTER</a>
+            </div>
+        </div>
+         <div class="form-container sign-up">
+            <div class="form-section">
+                <h2>Register Account</h2>
+
+                <form method="POST" action="{% url 'register' %}">
+                    {% csrf_token %}
+
+                    <div class="input-container">
+                        <input type="email" name="email" id="email" placeholder=" " required>
+                        <label for="email" class="labelline">Email</label>
+                        <i class="fas fa-envelope"></i>
+                    </div>
+
+                    <div class="input-container">
+                        <input type="text" name="username" id="username" placeholder=" " required>
+                        <label for="username" class="labelline">Username</label>
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <div class="input-container">
+                        <input type="password" name="password1" id="password" placeholder=" " required>
+                        <label for="password" class="labelline">Password</label>
+                        <!-- <i class="fas fa-key"></i> -->
+                    </div>
+
+                    <div class="input-container">
+                        <input type="password" name="password2" id="password2" placeholder=" " required>
+                        <label for="password2" class="labelline">Confirm Password</label>
+                        <!-- <i class="fas fa-key"></i> -->
+                    </div>
+
+                    <button type="submit">REGISTER</button>
+                </form>
+
+                <p class="toggle-text">Already have an account?</p>
+                <a href="#" class="toggle-link" id="login">LOGIN</a>
+            </div>
+        </div>
+        <div class="toggle-container">
+            <div class="toggle">
+                <div class="toggle-panel toggle-left">
+                    <div class="toggle-bg" style="background-image: url('{% static "myapp/img/terminal_bg.jpg" %}')"></div>
+                </div>
+                <div class="toggle-panel toggle-right">
+                    <div class="toggle-bg1" style="background-image: url('{% static "myapp/img/supergrandia.jpg" %}')"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'myapp/javascript/login.js' %}"></script>
+    {% if show_register %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('container').classList.add('active');
+            });
+        </script>
+    {% endif %}
+</body>
+</html>

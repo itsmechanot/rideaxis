@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ driver.first_name }} {{ driver.last_name }} - Profile</title>
+    <link rel="icon" type="image/png" sizes="180x180" href="{% static 'myapp/img/WebApp_Logo2.png' %}">
+    <link rel="stylesheet" href="{% static 'myapp/css/profile.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="profile-img">
+                <img src="{% static 'myapp/img/WebApp_Logo.png' %}" alt="Profile Picture">
+            </div>
+            <ul class="nav">
+                <li><a href="{% url 'index' %}">Home</a></li>
+                <li><a href="{% url 'terminal_schedules' %}">Schedules</a></li>
+                <li><a href="#" onclick="openLogoutModal(event)">Logout</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="switchTab('driver-info')">👤 Driver Info</button>
+                <button class="tab-btn" onclick="switchTab('active-ride')">🚗 Active Ride</button>
+                <button class="tab-btn" onclick="switchTab('recent-rides')">📋 Recent Rides</button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="tab-container">
+                <!-- Driver Info Tab -->
+                <div id="driver-info" class="tab-content active">
+                    <div class="form-box driver-info-card">
+                        <div class="card-header-profile">
+                            <h3>👤 Driver Information</h3>
+                        </div>
+
+                        <div class="profile-flex">
+                            <div class="profile-info">
+                                <form method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    {{ form.as_p }}
+
+                                    <div class="profile-buttons">
+                                        <button type="submit" name="save_profile" class="btn-save">Save Changes</button>
+                                        <button type="submit" class="btn-delete">Delete Profile</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div>
+                                <div class="profile-img-box">
+                                    {% if driver.profile_picture %}
+                                        <img src="{{ driver.profile_picture.url }}" alt="Profile Picture">
+                                    {% else %}
+                                        <img src="{% static 'myapp/img/driver_icon.png' %}" alt="Default Profile Picture">
+                                    {% endif %}
+                                </div>
+                                    
+                                {% if terminal_info.assigned_terminal %}
+                                <div class="terminal-status-box">
+                                    <p><strong>Terminal Registration Status</strong></p>
+                                    <p>
+                                        <span style="font-weight: 600;">{{ terminal_info.terminal_name }}</span>
+                                        <span class="status-badge" style="background-color: {{ terminal_info.status_color }};">
+                                            {{ terminal_info.status_display }}
+                                        </span>
+                                    </p>
+                                    
+                                    {% if terminal_info.status == 'pending' %}
+                                    <p style="margin: 10px 0 0 0; font-size: 13px; color: #666;">
+                                        <em>Your registration is awaiting approval from the terminal administrator.</em>
+                                    </p>
+                                    {% elif terminal_info.status == 'rejected' %}
+                                    <p style="margin: 10px 0 0 0; font-size: 13px; color: #dc3545;">
+                                        <strong>Rejection Reason:</strong> {{ terminal_info.rejection_reason }}
+                                    </p>
+                                    {% elif terminal_info.status == 'approved' %}
+                                    <p style="margin: 10px 0 0 0; font-size: 13px; color: #28a745;">
+                                        <em>✓ You are approved to create rides from this terminal.</em>
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <div class="terminal-status-box" style="background: #fff3cd !important; border-left-color: #ffc107 !important;">
+                                    <p style="margin: 0; font-size: 13px; color: #856404;">
+                                        <strong>⚠ No Terminal Selected</strong><br>
+                                        Please select a terminal to register with.
+                                    </p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Ride Tab -->
+                <div id="active-ride" class="tab-content">
+                    <div class="card">
+                        <h3>
+                            {% if assigned_ride %}
+                                Your Assigned Schedule
+                            {% elif active_ride %}
+                                Edit Your Active Ride
+                            {% else %}
+                                Create a Ride
+                            {% endif %}
+                        </h3>
+
+                        <div class="ride-flex">
+                            {% if not terminal_info.is_approved %}
+                                <div class="not-approved-message">
+                                    <h4>🚫 Cannot Create Rides</h4>
+                                    {% if not terminal_info.assigned_terminal %}
+                                        <p>Please select a terminal in your profile to get started.</p>
+                                    {% elif terminal_info.status == 'pending' %}
+                                        <p>Your terminal registration is pending approval.</p>
+                                    {% elif terminal_info.status == 'rejected' %}
+                                        <p>Your terminal registration was rejected.</p>
+                                    {% endif %}
+                                </div>
+
+                            {% elif assigned_ride %}
+                                <div class="ride-form">
+                                    <div class="schedule-info-box">
+                                        <p>📅 Schedule assigned by {{ assigned_ride.created_by_admin.terminal.name }}</p>
+                                    </div>
+                                    <div class="driver-info">
+                                        <p><strong>Driver:</strong> {{ driver.first_name }} {{ driver.last_name }}</p>
+                                        <p><strong>Terminal:</strong> {{ terminal_info.terminal_name }}</p>
+                                    </div>
+                                    <form method="POST" style="pointer-events: none; opacity: 0.7;">
+                                        {% csrf_token %}
+                                        {{ ride_form.as_p }}
+                                    </form>
+                                    <div class="schedule-notice">
+                                        <p><strong>ℹ️ Note:</strong> This schedule is managed by your terminal administrator.</p>
+                                    </div>
+                                    <form method="POST" style="display: inline-block;">
+                                        {% csrf_token %}
+                                        <button type="submit" name="activate_ride" class="btn-activate">✓ Activate Ride</button>
+                                    </form>
+                                </div>
+                                <div class="van-layout">
+                                    <h4>Seat Preview</h4>
+                                    <svg width="220" height="400" viewBox="0 0 220 400">
+                                        <rect x="10" y="10" width="200" height="380" rx="25" ry="25" fill="#a9a9a9" />
+                                        {% for seat in seat_classes %}
+                                        <rect x="{{ seat.x }}" y="{{ seat.y }}" width="40" height="40" class="seat {{ seat.status }}" style="pointer-events: none;"/>
+                                        {% endfor %}
+                                    </svg>
+                                </div>
+
+                            {% elif active_ride.status == 'waiting' %}
+                                <div class="ride-form">
+                                    {% if active_ride.is_admin_created %}
+                                    <div class="schedule-info-box">
+                                        <p>📅 Schedule created by terminal admin</p>
+                                    </div>
+                                    {% endif %}
+                                    <div class="driver-info">
+                                        <p><strong>Driver:</strong> {{ driver.first_name }} {{ driver.last_name }}</p>
+                                        <p><strong>Terminal:</strong> {{ terminal_info.terminal_name }}</p>
+                                    </div>
+                                    {% if active_ride.is_admin_created %}
+                                        <form style="pointer-events: none; opacity: 0.7;">
+                                            {{ ride_form.as_p }}
+                                        </form>
+                                        <div class="schedule-notice">
+                                            <p><strong>ℹ️ Note:</strong> This schedule was created by your terminal administrator and cannot be edited.</p>
+                                        </div>
+                                    {% else %}
+                                        <form method="POST">
+                                            {% csrf_token %}
+                                            {{ ride_form.as_p }}
+                                            <button type="submit" name="create_ride" class="btn-create-ride">Save Changes</button>
+                                        </form>
+                                    {% endif %}
+                                    <div class="ride-action-buttons mt-3">
+                                        <p><strong>Status:</strong> <span style="font-weight: bold; color: #28a745;">{{ active_ride.get_status_display }}</span></p>
+                                        <form method="POST" action="{% url 'depart_ride' active_ride.id %}" style="display: inline-block;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-depart">Mark as Departed</button>
+                                        </form>
+                                        <a href="{% url 'index' %}#rides" class="btn-view-rides">View Ride</a>
+                                    </div>
+                                </div>
+                                <div class="van-layout">
+                                    <svg width="220" height="400" viewBox="0 0 220 400">
+                                        <rect x="10" y="10" width="200" height="380" rx="25" ry="25" fill="#a9a9a9" />
+                                        {% for seat in seat_classes %}
+                                        <rect x="{{ seat.x }}" y="{{ seat.y }}" width="40" height="40" class="seat {{ seat.status }}" data-seat-id="{{ seat.id }}" data-status="{{ seat.status }}" style="cursor: pointer;"/>
+                                        {% endfor %}
+                                    </svg>
+                                </div>
+
+                            {% elif active_ride.status == 'departed' %}
+                                <div class="departed-ride-info">
+                                    <h3>Ride Departed! Status: <span style="color: #ffc107;">{{ active_ride.get_status_display }}</span></h3>
+                                    <div id="map-container" data-ride-id="{{ active_ride.id }}">
+                                        <div id="live-map" style="width: 100%; height: 350px;"></div>
+                                    </div>
+                                    <form method="POST" action="{% url 'complete_ride' active_ride.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-complete">Mark Ride as Completed</button>
+                                    </form>
+                                    <a href="{% url 'index' %}#rides" class="btn-view-rides mt-2">View Public Ride Listing</a>
+                                </div>
+
+                            {% else %}
+                                <div class="ride-form">
+                                    <div class="driver-info">
+                                        <p><strong>Driver:</strong> {{ driver.first_name }} {{ driver.last_name }}</p>
+                                        <p><strong>Terminal:</strong> {{ terminal_info.terminal_name }}</p>
+                                    </div>
+                                    <div class="waiting-for-assignment">
+                                        <div style="font-size: 48px; margin-bottom: 15px;">🚐</div>
+                                        <h4>Waiting for Schedule Assignment</h4>
+                                        <p>Your terminal administrator will assign your next ride schedule.</p>
+                                    </div>
+                                </div>
+                                <div class="van-layout">
+                                    <h4 style="color: #666;">Seat Preview</h4>
+                                    <svg width="220" height="400" viewBox="0 0 220 400">
+                                        <rect x="10" y="10" width="200" height="380" rx="25" ry="25" fill="#a9a9a9" />
+                                        {% for seat in seat_classes %}
+                                        <rect x="{{ seat.x }}" y="{{ seat.y }}" width="40" height="40" class="seat {{ seat.status }}" style="pointer-events: none; opacity: 0.5;"/>
+                                        {% endfor %}
+                                    </svg>
+                                    <p style="text-align: center; color: #999; font-size: 12px; margin-top: 10px;">Seats will be available when assigned</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Rides Tab -->
+                <div id="recent-rides" class="tab-content">
+                    <div class="recent-rides-card">
+                        <div class="card-header">
+                            <h2>Recent Rides</h2>
+                            <a href="{% url 'ride_history' %}" class="view-all">View All</a>
+                        </div>
+
+                        <div class="rides-list">
+                            {% if past_rides %}
+                                {% for ride in past_rides %}
+                                <div class="ride-item">
+                                    <div class="ride-info">
+                                        <div class="ride-location">
+                                            <span class="from">{{ ride.terminal }}</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span class="to">{{ ride.route }}</span>
+                                        </div>
+                                        <div class="ride-details">
+                                            <span class="date">{{ ride.departure_time|date:"M d, Y - h:i A" }}</span>
+                                            <span class="price">Seats: {{ ride.seats_available }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ride-status completed">{{ ride.status|title }}</div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p>No recent rides found.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="logout-modal-overlay" id="logoutModal">
+        <div class="logout-modal">
+            <div class="logout-modal-icon">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+            <h3>Logout</h3>
+            <p>Are you sure you want to logout of your account?</p>
+            <div class="logout-modal-buttons">
+                <button class="btn-cancel" onclick="closeLogoutModal()">Cancel</button>
+                <a href="{% url 'logout' %}" class="btn-logout">Yes, Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup-container"></div>
+    <script src="{% static 'myapp/javascript/profile.js' %}"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    {% if active_ride and active_ride.status == 'departed' %}
+    <script src="{% static 'myapp/javascript/ride_tracker.js' %}"></script>
+    {% endif %}
+    <script>
+        function switchTab(tabName) {
+            const contents = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-btn');
+            
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

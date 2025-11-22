@@ -1,0 +1,171 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ride History - {{ request.user.first_name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <style>
+        /* Simple styling for the history page (You can integrate this into your existing CSS) */
+        body { font-family: sans-serif; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .chart-container { margin-bottom: 40px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #f9f9f9; }
+        .ride-item { padding: 10px 0; border-bottom: 1px dashed #eee; }
+        .ride-item:last-child { border-bottom: none; }
+        h1, h2 { color: #007bff; }
+        .btn-secondary { /* Basic styling for 'Back to Profile' */
+            display: inline-block;
+            padding: 8px 15px;
+            margin-bottom: 20px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .chart-container { 
+        margin-bottom: 40px; 
+        padding: 20px; 
+        border: 1px solid #ccc; 
+        border-radius: 8px; 
+        background-color: #f9f9f9; 
+        /* ADD THESE TWO LINES: */
+        height: 350px; 
+        position: relative; 
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ride History for {{ request.user.first_name }}</h1>
+        <a href="{% url 'profile' %}" class="btn-secondary"><i class="fas fa-arrow-left"></i> Back to Profile</a>
+        
+        <!-- <hr>
+
+        <div class="ride-stats">
+            <h2>Monthly Ride Statistics</h2>
+            
+            <div class="chart-container">
+                <canvas id="monthlyRideChart"></canvas>
+            </div>
+            
+            {{ chart_data|safe|json_script:"chart-data-json" }}
+            
+        </div>
+        
+        <hr> -->
+
+        <div class="full-ride-list">
+            <h2>All Completed Rides ({{ all_past_rides|length }})</h2>
+            {% if all_past_rides %}
+                {% for ride in all_past_rides %}
+                    <div class="ride-item">
+                        <p style="font-size: 1.1em; font-weight: bold;">
+                            {{ ride.start_point }} 
+                            <i class="fas fa-arrow-right"></i> 
+                            {{ ride.route }}
+                        </p>
+                        <p>Departed: {{ ride.departure_time|date:"M d, Y" }} at {{ ride.departure_time|time:"h:i A" }}</p>
+                        <p>Terminal: {{ ride.terminal }} ({{ ride.location }})</p>
+                        <p>Plate: {{ ride.plate_number }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>You have not completed any rides yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script id="chart-data-json" type="application/json">
+    {{ chart_data|safe }}
+    </script>
+    <p id="raw-data-check">{{ chart_data|safe }}</p>
+    
+    <!-- <script>
+        (function() { // Wrap the code in an Immediately Invoked Function Expression (IIFE) for safe scope
+            
+            const chartDataElement = document.getElementById('chart-data-json');
+            
+            if (!chartDataElement) {
+                console.error("Chart data element not found. Cannot proceed.");
+                return; 
+            }
+
+            // CRITICAL FIX: Use .innerHTML instead of .textContent when using the |safe filter
+            const chartData = JSON.parse(chartDataElement.innerHTML); 
+            
+            if (!chartData || !chartData.months || chartData.months.length === 0) {
+                console.warn("No completed rides found to generate a chart or data is malformed.");
+                
+                // Optional: Display a message on the canvas itself
+                const chartCanvas = document.getElementById('monthlyRideChart');
+                if (chartCanvas) {
+                    const parent = chartCanvas.parentNode;
+                    chartCanvas.remove();
+                    
+                    const message = document.createElement('p');
+                    message.textContent = "No completed ride history available for chart.";
+                    message.style.textAlign = 'center';
+                    message.style.padding = '20px';
+                    parent.appendChild(message);
+                }
+                return;
+            }
+
+            // Extract labels and data points
+            const labels = chartData.months;
+            const data = chartData.counts.map(c => parseInt(c, 10)); // Safe conversion
+
+            const ctx = document.getElementById('monthlyRideChart').getContext('2d');
+            console.log("Canvas Context:", ctx);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Rides Created',
+                        data: data,
+                        backgroundColor: 'rgba(0, 123, 255, 0.6)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Rides'
+                            },
+                            ticks: {
+                                stepSize: 1 
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Total Completed Rides by Month'
+                        }
+                    }
+                }
+            });
+        })();
+</script> -->
+</body>
+</html>

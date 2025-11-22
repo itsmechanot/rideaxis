@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RideAxis Landing Page</title>
+  <link rel="icon" type="image/png" sizes="180x180" href="{% static 'myapp/img/WebApp_Logo2.png' %}">
+  <link rel="stylesheet" href="{% static 'myapp/css/main.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="#" class="navbar-logo">
+        <img src="{% static 'myapp/img/WebApp_Logo.png' %}" alt="RideAxis Logo">
+      </a>
+      <button class="navbar-toggle">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+      <ul class="navbar-menu">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#rides">Rides</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#services">Service</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li class="dropdown">
+          <a href="" class="user-icon-link">
+            <i class="fa-solid fa-user user-icon"></i>
+            <span class="profile-text">Profile</span>
+          </a>
+          <ul class="dropdown-menu">
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'profile' %}">View Profile</a></li>
+            <li><a href="#" onclick="openLogoutModal(event)">Logout</a></li>
+            {% else %}
+            <li><a href="{% url 'login' %}">Signup/Login</a></li>
+            {% endif %}
+        </ul>
+        </li>
+        <li class="dropdown mobile-dropdown">
+          <a href="" class="user-icon-link" onclick="toggleMobileProfile(event)">
+            <span class="profile-text">Profile</span>
+          </a>
+          <ul class="mobile-profile-menu">
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'profile' %}">View Profile</a></li>
+            <li><a href="#" onclick="openLogoutModal(event)">Logout</a></li>
+            {% else %}
+            <li><a href="{% url 'login' %}">Signup/Login</a></li>
+            {% endif %}
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="home-section" id="home">
+    <div class="home-content">
+      <h3>Welcome To</h3>
+      <h1>RIDEAXIS</h1>
+      <h5>-Where Timing Meets Travel</h5>
+      <a href="#about" class="learn_more">Learn More</a>
+    </div>
+
+    <div class="cards">
+      <div class="card beach">
+        <div class="card-overlay"></div>
+        <h3>LIVE SEAT AVALABILITY</h3>
+      </div>
+      <div class="card nature">
+        <div class="card-overlay"></div>
+        <h3>DRIVER UPDATE</h3>
+      </div>
+      <div class="card hotel">
+        <div class="card-overlay"></div>
+        <h3>TERMINAL LOCATOR</h3>
+      </div>
+    </div>
+
+  </section>
+
+
+<section id="rides">
+  <div class="rides-container">
+    <div class="rides-header">
+      <!-- Left: Search bar -->
+      <div class="rides-search">
+        <input type="text" id="search-bar" placeholder="Search rides..." onkeyup="filterRides()" />
+      </div>
+
+      <!-- Center: Title -->
+      <h2 class="rides-title">Available Rides</h2>
+
+      <!-- Right: Time and Filter -->
+      <div class="rides-tools">
+        <select id="route-filter" onchange="filterRides()">
+          <option value="">All Routes</option>
+          {% for route in routes %}
+          <option value="{{ route }}">{{ route }}</option>
+          {% endfor %}
+        </select>
+        <div id="current-time"></div>
+      </div>
+    </div>
+
+    <div class="rides-grid">
+      {% if rides %}
+      {% for ride in rides %}
+      <div class="ride-card">
+        <!-- Ride Details -->
+        <div class="ride-details">
+          <h3 class="ride-route">
+              <span class="route-start">{{ ride.start_point }}</span> 
+              <i class="fas fa-arrow-right" style="margin: 0 8px; color: #333;"></i> 
+              <span class="route-end">{{ ride.route }}</span>
+          </h3>
+
+          <p class="ride-status">
+            <strong>Status:</strong> 
+            <span style="color: green; font-weight: bold;">{{ ride.get_status_display }}</span>
+          </p>
+
+          <div class="ride-info">
+            <p><strong>Terminal Name:</strong> {{ ride.terminal }}</p>
+            <p><strong>Driver Name:</strong> {{ ride.driver.first_name }} {{ ride.driver.last_name }}</p>
+            <p><strong>Available Seats:</strong> {{ ride.seats_available }}</p>
+            <p><strong>Departure Time:</strong> {{ ride.departure_time|date:"M d, Y, g:i a" }}</p>
+            <div class="driver-rating">
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom: Action Button -->
+        <div class="ride-footer">
+          {% if user.is_authenticated and ride.driver == user %}
+          <a href="{% url 'profile' %}" class="ride-btn">Update Ride</a>
+          {% else %}
+          <a href="{% url 'driver_detail' ride.driver.id %}" class="ride-btn">View Details</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="no-rides">
+        <p>No rides available right now</p>
+        <small>Please check back later!</small>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+
+  <!-- ABOUT SECTION -->
+  <section id="about">
+  <div class="about-container">
+    <h2 class="about-title">About RideAxis</h2>
+
+    <div class="about-columns">
+      <!-- Card 1: Logo -->
+      <div class="about-card" onclick="openModal('logoModal')">
+        <div class="card-image">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h3>Our Brand</h3>
+        <p>Discover the story behind RideAxis and our mission.</p>
+        <div class="click-hint">Click to learn more <i class="fa-solid fa-arrow-right"></i></div>
+      </div>
+
+      <!-- Card 2: Poster -->
+      <div class="about-card" onclick="openModal('posterModal')">
+        <div class="card-image">
+          <i class="fa-solid fa-image"></i>
+        </div>
+        <h3>Our Vision</h3>
+        <p>See what RideAxis is all about at a glance.</p>
+        <div class="click-hint">Click to view poster <i class="fa-solid fa-arrow-right"></i></div>
+      </div>
+
+      <!-- Card 3: Video -->
+      <div class="about-card" onclick="openModal('videoModal')">
+        <div class="card-image">
+          <i class="fa-solid fa-play"></i>
+        </div>
+        <h3>Watch Video</h3>
+        <p>Experience RideAxis through our promotional video.</p>
+        <div class="click-hint">Click to watch <i class="fa-solid fa-arrow-right"></i></div>
+      </div>
+    </div>
+
+    <div class="about-cta">
+      <p>Ride smarter with <span>RideAxis</span> today.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Modal 1: Logo -->
+<div class="modal-overlay" id="logoModal">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeModal('logoModal')">&times;</span>
+    <div class="modal-body">
+      <!-- Replace src with your actual logo path -->
+      <img src="{% static 'myapp/img/WebApp_Logo2.png' %}" alt="RideAxis Logo">
+      <h2>RideAxis</h2>
+      <p>
+        RideAxis is a modern transportation platform designed to connect passengers 
+        with reliable van services across terminals in Leyte. Our logo represents 
+        movement, connectivity, and trust – the core values that drive our mission 
+        to make travel easier and more accessible for everyone.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Poster -->
+<div class="modal-overlay" id="posterModal">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeModal('posterModal')">&times;</span>
+    <div class="modal-body">
+      <!-- Replace src with your actual poster path -->
+      <img src="{% static 'myapp/img/poster.png' %}" alt="RideAxis Poster">
+      <h2>Our Vision</h2>
+      <p>
+        RideAxis aims to revolutionize public transportation by providing real-time 
+        seat availability, seamless driver updates, and easy terminal navigation. 
+        We believe that every journey should start with confidence and convenience.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3: Video -->
+<div class="modal-overlay" id="videoModal">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeModal('videoModal')">&times;</span>
+    <div class="modal-body">
+      <div class="video-container">
+        <!-- Replace src with your actual video path -->
+        <video id="promoVideo" controls>
+          <source src="{% static 'myapp/vid/WebAppAdd.mp4' %}" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <h2>Experience RideAxis</h2>
+      <p>
+        Watch our promotional video to see how RideAxis is transforming the way 
+        people travel. From real-time updates to safe and reliable rides, 
+        discover the future of transportation.
+      </p>
+    </div>
+  </div>
+</div>
+
+  <!-- Services Section -->
+  <section id="services" class="services">
+    <div class="container">
+      <h2 class="section-title">Our Services</h2>
+      <p class="section-subtitle">What you can expect from our platform</p>
+
+      <div class="services-grid">
+        <!-- Service 1 -->
+        <div class="service-card">
+          <img src="{% static 'myapp/img/realtime_seat_avail.png' %}" alt="Seat Availability" class="service-icon">
+          <h3>Real-Time Seat Availability</h3>
+          <p>Check how many seats are available instantly.</p>
+        </div>
+
+        <!-- Service 3 -->
+        <div class="service-card">
+          <img src="{% static 'myapp/img/driver_updates.png' %}" alt="Driver Updates" class="service-icon">
+          <h3>Driver Updates</h3>
+          <p>Drivers can easily update available seats, routes, and departure details.</p>
+        </div>
+
+        <!-- Service 4 -->
+        <div class="service-card">
+          <img src="{% static 'myapp/img/terminal_locator_service.png' %}" alt="Terminal Locator" class="service-icon">
+          <h3>Terminal Locator</h3>
+          <p>Quickly find from which terminal your ride will depart.</p>
+        </div>
+
+        <!-- Service 5 -->
+        <div class="service-card">
+          <img src="{% static 'myapp/img/safe_ride_service.png' %}" alt="Safe and Reliable" class="service-icon">
+          <h3>Safe & Reliable Rides</h3>
+          <p>Every ride ensures comfort and reliability for all passengers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="contact">
+    <div class="container">
+      <h2>Get in Touch</h2>
+      <p class="subtitle">Have questions or feedback? We're here to help.</p>
+        <div class="contact-info">
+          <h3>Contact Information</h3>
+          <p><strong>📍 Address:</strong> BIPSU STCS Building, 2nd Floor</p>
+          <p><strong>📞 Phone:</strong> +63 912 345 6789</p>
+          <p><strong>📧 Email:</strong> support@rideaxis.com</p>
+          <p><strong>⏰ Hours:</strong> Mon - Sun: 6:00 AM - 10:00 PM</p>
+
+          <!-- Leaflet Map -->
+          <div id="map"></div>
+        </div>
+      <!-- </div> -->
+    </div>
+  </section>
+
+    <div class="logout-modal-overlay" id="logoutModal">
+      <div class="logout-modal">
+          <div class="logout-modal-icon">
+              <i class="fa-solid fa-right-from-bracket"></i>
+          </div>
+          <h3>Sign Out</h3>
+          <p>Are you sure you want to sign out of your account?</p>
+          <div class="logout-modal-buttons">
+              <button class="btn-cancel" onclick="closeLogoutModal()">Cancel</button>
+              <a href="{% url 'logout' %}" class="btn-logout">Yes, Sign Out</a>
+          </div>
+      </div>
+  </div>
+
+
+  <script src="{% static 'myapp/javascript/user_icon.js' %}"></script>
+  <script src="{% static 'myapp/javascript/contactMap.js' %}"></script>
+  <script src="{% static 'myapp/javascript/nav_hover.js' %}"></script>
+  <script src="{% static 'myapp/javascript/mobile_menu.js' %}"></script>
+  <script src="{% static 'myapp/javascript/real_time.js' %}"></script>
+  <script>
+        function openModal(modalId) {
+          const modal = document.getElementById(modalId);
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          
+          // If opening video modal, don't auto-play
+          if (modalId === 'videoModal') {
+            const video = document.getElementById('promoVideo');
+            video.currentTime = 0;
+          }
+        }
+
+        function closeModal(modalId) {
+          const modal = document.getElementById(modalId);
+          modal.classList.remove('active');
+          document.body.style.overflow = 'auto';
+          
+          // Pause video when closing
+          if (modalId === 'videoModal') {
+            const video = document.getElementById('promoVideo');
+            video.pause();
+          }
+        }
+
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+              closeModal(modal.id);
+            }
+          });
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+              closeModal(modal.id);
+            });
+          }
+        });
+
+        function openLogoutModal(event) {
+          event.preventDefault();
+          const modal = document.getElementById('logoutModal');
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+      }
+
+      function closeLogoutModal() {
+          const modal = document.getElementById('logoutModal');
+          modal.classList.remove('active');
+          document.body.style.overflow = 'auto';
+      }
+
+      // Close modal when clicking outside
+      document.getElementById('logoutModal').addEventListener('click', function(e) {
+          if (e.target === this) {
+              closeLogoutModal();
+          }
+      });
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+              const logoutModal = document.getElementById('logoutModal');
+              if (logoutModal.classList.contains('active')) {
+                  closeLogoutModal();
+              }
+          }
+      });
+</script>
+</body>
+
+</html>
