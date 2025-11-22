@@ -74,7 +74,7 @@ class Driver(AbstractBaseUser, PermissionsMixin):
         blank=True,
         null=True
     )
-    profile_picture = models.ImageField(
+    profile_picture = models.FileField(
         upload_to='profile_pictures/', 
         default='profile_pictures/default.png',
         blank=True, 
