@@ -1,2 +1,2 @@
-web: cd rideaxis && gunicorn rideaxis.wsgi:application
-release: cd rideaxis && python manage.py migrate
+web: gunicorn rideaxis.wsgi:application --chdir rideaxis
+release: python manage.py migrate --settings=rideaxis.settings
