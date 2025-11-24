@@ -14,6 +14,14 @@ document.addEventListener('DOMContentLoaded', function () {
         container.classList.remove('active');
     });
 
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        const newIsMobile = window.innerWidth <= 768;
+        if (newIsMobile) {
+            container.classList.remove('active');
+        }
+    });
+
     // Handle popup
     const overlay = document.getElementById('popup-overlay');
     if (!overlay) return;
