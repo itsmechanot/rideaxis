@@ -1,0 +1,91 @@
+/* admin_dashboard.css */
+
+.parent {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    gap: 6px;
+    height: 100vh;
+    padding: 10px;
+}
+    
+.div1 {
+    grid-row: span 7 / span 7;
+    background-color: #343a40; /* Dark background for sidebar */
+    color: white;
+    padding: 15px;
+}
+
+.div2 {
+    grid-column: span 8 / span 8;
+    padding: 15px;
+    background-color: #f8f9fa; /* Light background for header */
+}
+
+.div3 {
+    grid-column: span 2 / span 2;
+    grid-row: span 4 / span 4;
+    grid-column-start: 2;
+    grid-row-start: 2;
+}
+
+.div4 {
+    grid-column: span 2 / span 2;
+    grid-row: span 2 / span 2;
+    grid-column-start: 4;
+    grid-row-start: 2;
+}
+
+.div5 {
+    grid-column: span 2 / span 2;
+    grid-row: span 2 / span 2;
+    grid-column-start: 6;
+    grid-row-start: 2;
+}
+
+.div6 {
+    grid-column: span 2 / span 2;
+    grid-row: span 2 / span 2;
+    grid-column-start: 8;
+    grid-row-start: 2;
+}
+
+.div7 {
+    grid-column: span 2 / span 2;
+    grid-row: span 2 / span 2;
+    grid-column-start: 4;
+    grid-row-start: 4;
+}
+
+.div8 {
+    grid-column: span 2 / span 2;
+    grid-row: span 2 / span 2;
+    grid-column-start: 6;
+    grid-row-start: 4;
+}
+
+.div9 {
+    grid-column: span 2 / span 2;
+    grid-row: span 2 / span 2;
+    grid-column-start: 8;
+    grid-row-start: 4;
+}
+
+.div10 {
+    grid-column: span 4 / span 4;
+    grid-row: span 2 / span 2;
+    grid-column-start: 2;
+    grid-row-start: 6;
+}
+
+.div11 {
+    grid-column: span 4 / span 4;
+    grid-row: span 2 / span 2;
+    grid-column-start: 6;
+    grid-row-start: 6;
+}
+
+/* General style to prevent horizontal overflow in tables/cards */
+.card-body, .table-responsive {
+    overflow: auto;
+}
