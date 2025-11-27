@@ -3,8 +3,10 @@ from . import views
 from .views import create_ride, Ride
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
 
 urlpatterns = [
+    path('googlebcc0877cc4919441.html', serve, {'document_root': settings.STATIC_ROOT, 'path': 'googlebcc0877cc4919441.html'}),
     path("", views.index, name="index"),
     path('profile/', views.profile, name='profile'),
     path('login/', views.login_view, name='login'),
@@ -45,3 +47,5 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
